@@ -1,0 +1,31 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+.category-swiper .swiper-button-next,
+.category-swiper .swiper-button-prev {
+  color: #ec4899;
+}
+
+.category-swiper .swiper-pagination-bullet {
+  background: #ec4899;
+}
+
+.category-swiper .swiper-pagination-bullet-active {
+  background: #ec4899;
+}
+
+.hero-swiper .swiper-button-next,
+.hero-swiper .swiper-button-prev {
+  color: white;
+  text-shadow: 0 0 3px rgba(0, 0, 0, 0.5);
+}
+
+.hero-swiper .swiper-pagination-bullet {
+  background: white;
+  opacity: 0.7;
+}
+
+.hero-swiper .swiper-pagination-bullet-active {
+  opacity: 1;
+}
