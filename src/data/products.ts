@@ -27,5 +27,24 @@ export const products: Product[] = [
     sizes: ['1', '2', '3', '4', '5'],
     category: 'chalecos',
     imageUrl: 'https://images.pexels.com/photos/3361739/pexels-photo-3361739.jpeg'
+  },
+   {
+    id: 4,
+    name: 'Chaleco Formal',
+    price: 3800,
+    description: 'Chaleco formal para eventos especiales',
+    sizes: ['1', '2', '3', '4', '5'],
+    category: 'chalecos',
+    imageUrl: 'https://images.pexels.com/photos/3361739/pexels-photo-3361739.jpeg'
+  }
+,
+ {
+    id: 5,
+    name: 'Chaleco Formal',
+    price: 3800,
+    description: 'Chaleco formal para eventos especiales',
+    sizes: ['1', '2', '3', '4', '5'],
+    category: 'chalecos',
+    imageUrl: 'https://images.pexels.com/photos/3361739/pexels-photo-3361739.jpeg'
   }
 ];

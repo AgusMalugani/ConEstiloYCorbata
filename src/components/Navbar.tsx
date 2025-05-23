@@ -16,7 +16,6 @@ const Navbar: React.FC<NavbarProps> = ({ cartItemsCount, onCartClick }) => {
             <span className="ml-2 text-xl font-semibold text-gray-900">Con Estilo y Corbata</span>
           </div>
           <div className="flex items-center space-x-8">
-            <a href="#inicio" className="text-gray-700 hover:text-pink-600">Inicio</a>
             <a href="#productos" className="text-gray-700 hover:text-pink-600">Productos</a>
             <button
               onClick={onCartClick}

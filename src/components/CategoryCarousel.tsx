@@ -15,13 +15,13 @@ interface Category {
 const categories: Category[] = [
   {
     id: 1,
-    name: 'Ositos Soft',
-    image: 'https://images.pexels.com/photos/5731866/pexels-photo-5731866.jpeg',
-    link: '/categoria/ositos-soft'
+    name: 'Polar Soft',
+    image: 'https://images.pexels.com/photos/6568944/pexels-photo-6568944.jpeg',
+    link: '/categoria/polar-soft'
   },
   {
     id: 2,
-    name: 'Chalequitos Puffer',
+    name: 'Chalecos Puffer',
     image: 'https://images.pexels.com/photos/6568944/pexels-photo-6568944.jpeg',
     link: '/categoria/chalequitos-puffer'
   },
