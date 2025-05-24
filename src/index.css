@@ -15,6 +15,10 @@
   background: #ec4899;
 }
 
+.hero-swiper {
+  height: 100% !important;
+}
+
 .hero-swiper .swiper-button-next,
 .hero-swiper .swiper-button-prev {
   color: white;
@@ -28,4 +32,20 @@
 
 .hero-swiper .swiper-pagination-bullet-active {
   opacity: 1;
+}
+
+/* Modal animation */
+@keyframes modalFade {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.modal-enter {
+  animation: modalFade 0.2s ease-out;
 }

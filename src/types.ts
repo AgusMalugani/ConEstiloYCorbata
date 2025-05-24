@@ -4,7 +4,7 @@ export interface Product {
   price: number;
   description: string;
   sizes: string[];
-  category: 'sueter' | 'camisetas' | 'buzos' | 'chalecos' | 'accesorios';
+  category: string;
   imageUrl: string;
 }
 
