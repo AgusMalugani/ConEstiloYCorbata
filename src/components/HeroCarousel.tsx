@@ -25,7 +25,7 @@ const HeroCarousel: React.FC = () => {
   ];
 
   return (
-    <div className="relative w-full h-[600px] overflow-hidden">
+    <div className="relative w-full" style={{ paddingTop: '56.25%' }}> {/* 16:9 aspect ratio */}
       <Swiper
         modules={[Navigation, Pagination, Autoplay]}
         spaceBetween={0}
@@ -37,11 +37,11 @@ const HeroCarousel: React.FC = () => {
       >
         {heroImages.map((image) => (
           <SwiperSlide key={image.id} className="!h-full">
-            <div className="relative w-full h-full">
+            <div className="relative w-full h-full flex items-center justify-center bg-gray-100">
               <img
                 src={image.url}
                 alt={image.alt}
-                className="absolute inset-0 w-full h-full object-cover"
+                className="w-full h-full object-contain"
               />
               <div className="absolute inset-0 bg-black bg-opacity-30"></div>
             </div>

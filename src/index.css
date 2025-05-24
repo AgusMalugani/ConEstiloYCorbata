@@ -15,6 +15,10 @@
   background: #ec4899;
 }
 
+.hero-swiper {
+  height: 100% !important;
+}
+
 .hero-swiper .swiper-button-next,
 .hero-swiper .swiper-button-prev {
   color: white;
