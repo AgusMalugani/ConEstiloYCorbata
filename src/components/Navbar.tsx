@@ -1,5 +1,5 @@
 import React from 'react';
-import { DogIcon, ShoppingBag } from 'lucide-react';
+import { ShoppingBag } from 'lucide-react';
 
 interface NavbarProps {
   cartItemsCount: number;
@@ -12,7 +12,11 @@ const Navbar: React.FC<NavbarProps> = ({ cartItemsCount, onCartClick }) => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           <div className="flex items-center">
-            <DogIcon className="h-8 w-8 text-pink-600" />
+            <img 
+              src="https://i.ibb.co/VxKJ8Xm/logo.png"
+              alt="Con Estilo y Corbata"
+              className="h-12 w-12 rounded-full object-cover"
+            />
             <span className="ml-2 text-xl font-semibold text-gray-900">Con Estilo y Corbata</span>
           </div>
           <div className="flex items-center space-x-8">
