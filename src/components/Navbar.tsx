@@ -1,6 +1,5 @@
 import React from 'react';
 import { ShoppingBag } from 'lucide-react';
-import { ShoppingBag } from 'lucide-react';
 
 interface NavbarProps {
   cartItemsCount: number;
