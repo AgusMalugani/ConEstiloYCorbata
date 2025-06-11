@@ -36,8 +36,24 @@ function App() {
     );
   };
 
+  const updateQuantity = (productId: number, size: string, quantity: number) => {
+    if (quantity <= 0) {
+      removeFromCart(productId, size);
+      return;
+    }
+
+    setCart(currentCart =>
+      currentCart.map(item =>
+        item.id === productId && item.selectedSize === size
+          ? { ...item, quantity }
+          : item
+      )
+    );
+  };
+
   const handleOrderComplete = () => {
     setCart([]);
+    setIsCartOpen(false);
   };
 
   const cartItemsCount = cart.reduce((sum, item) => sum + item.quantity, 0);
@@ -54,6 +70,7 @@ function App() {
           onClose={() => setIsCartOpen(false)}
           items={cart}
           onRemoveItem={removeFromCart}
+          onUpdateQuantity={updateQuantity}
           onOrderComplete={handleOrderComplete}
         />
       </main>

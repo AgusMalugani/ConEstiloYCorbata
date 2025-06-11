@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { apiService, ApiProduct } from '../services/api';
 import { Product } from '../types';
 
-// Convert API product to frontend product format
+// Convertir producto de la API al formato del frontend
 const convertApiProduct = (apiProduct: ApiProduct): Product => ({
   id: apiProduct.id,
   name: apiProduct.name,
@@ -11,6 +11,7 @@ const convertApiProduct = (apiProduct: ApiProduct): Product => ({
   sizes: apiProduct.sizes,
   category: apiProduct.category,
   imageUrl: apiProduct.imageUrl,
+  stock: apiProduct.stock,
 });
 
 export const useProducts = (category?: string, sortBy?: string) => {
@@ -18,26 +19,27 @@ export const useProducts = (category?: string, sortBy?: string) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    const fetchProducts = async () => {
-      try {
-        setLoading(true);
-        setError(null);
-        const apiProducts = await apiService.getProducts(category, sortBy);
-        const convertedProducts = apiProducts.map(convertApiProduct);
-        setProducts(convertedProducts);
-      } catch (err) {
-        setError(err instanceof Error ? err.message : 'Error fetching products');
-        console.error('Error fetching products:', err);
-      } finally {
-        setLoading(false);
-      }
-    };
+  const fetchProducts = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const apiProducts = await apiService.getProducts(category, sortBy);
+      const convertedProducts = apiProducts.map(convertApiProduct);
+      setProducts(convertedProducts);
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Error al cargar los productos';
+      setError(errorMessage);
+      console.error('Error al obtener productos:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
+  useEffect(() => {
     fetchProducts();
   }, [category, sortBy]);
 
-  return { products, loading, error, refetch: () => fetchProducts() };
+  return { products, loading, error, refetch: fetchProducts };
 };
 
 export const useCategories = () => {
@@ -45,23 +47,53 @@ export const useCategories = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    const fetchCategories = async () => {
-      try {
-        setLoading(true);
-        setError(null);
-        const apiCategories = await apiService.getCategories();
-        setCategories(apiCategories);
-      } catch (err) {
-        setError(err instanceof Error ? err.message : 'Error fetching categories');
-        console.error('Error fetching categories:', err);
-      } finally {
-        setLoading(false);
-      }
-    };
+  const fetchCategories = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const apiCategories = await apiService.getCategories();
+      setCategories(apiCategories);
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Error al cargar las categorías';
+      setError(errorMessage);
+      console.error('Error al obtener categorías:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
+  useEffect(() => {
     fetchCategories();
   }, []);
 
-  return { categories, loading, error };
+  return { categories, loading, error, refetch: fetchCategories };
+};
+
+export const useOrder = (orderId?: number) => {
+  const [order, setOrder] = useState<any>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const fetchOrder = async (id: number) => {
+    try {
+      setLoading(true);
+      setError(null);
+      const orderData = await apiService.getOrder(id);
+      setOrder(orderData);
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Error al cargar el pedido';
+      setError(errorMessage);
+      console.error('Error al obtener pedido:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (orderId) {
+      fetchOrder(orderId);
+    }
+  }, [orderId]);
+
+  return { order, loading, error, fetchOrder };
 };

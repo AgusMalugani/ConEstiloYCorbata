@@ -5,7 +5,7 @@ import 'swiper/css';
 import 'swiper/css/navigation';
 import 'swiper/css/pagination';
 import CategoryModal from './CategoryModal';
-import { products } from '../data/products';
+import { useProducts } from '../hooks/useProducts';
 
 interface Category {
   id: number;
@@ -24,7 +24,7 @@ const categories: Category[] = [
   {
     id: 2,
     name: 'Chalecos Puffer',
-    image: 'https://images.pexels.com/photos/6568944/pexels-photo-6568944.jpeg',
+    image: 'https://images.pexels.com/photos/6568951/pexels-photo-6568951.jpeg',
     link: '/categoria/chalequitos-puffer'
   },
   {
@@ -36,7 +36,7 @@ const categories: Category[] = [
   {
     id: 4,
     name: 'Accesorios',
-    image: 'https://images.pexels.com/photos/6568951/pexels-photo-6568951.jpeg',
+    image: 'https://images.pexels.com/photos/6568961/pexels-photo-6568961.jpeg',
     link: '/categoria/accesorios'
   }
 ];
@@ -45,14 +45,12 @@ const CategoryCarousel: React.FC = () => {
   const [selectedCategory, setSelectedCategory] = useState<string>('');
   const [isModalOpen, setIsModalOpen] = useState(false);
 
+  const { products: filteredProducts, loading } = useProducts(selectedCategory);
+
   const handleCategoryClick = (categoryName: string) => {
     setSelectedCategory(categoryName);
     setIsModalOpen(true);
   };
-
-  const filteredProducts = products.filter(
-    product => product.category.toLowerCase() === selectedCategory.toLowerCase()
-  );
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
@@ -106,6 +104,7 @@ const CategoryCarousel: React.FC = () => {
         onClose={() => setIsModalOpen(false)}
         category={selectedCategory}
         products={filteredProducts}
+        loading={loading}
       />
     </div>
   );

@@ -1,4 +1,4 @@
-const API_BASE_URL = 'http://localhost:3001/api';
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
 
 export interface ApiProduct {
   id: number;
@@ -43,6 +43,20 @@ export interface CreateOrderRequest {
   total: number;
 }
 
+export interface CreateOrderResponse {
+  message: string;
+  order: {
+    id: number;
+    status: string;
+    total: number;
+    paymentInfo: {
+      cbu: string;
+      alias: string;
+      whatsapp: string;
+    };
+  };
+}
+
 class ApiService {
   private async request<T>(endpoint: string, options?: RequestInit): Promise<T> {
     try {
@@ -56,20 +70,27 @@ class ApiService {
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
+        throw new Error(errorData.error || `Error HTTP: ${response.status}`);
       }
 
       return await response.json();
     } catch (error) {
-      console.error(`API request failed for ${endpoint}:`, error);
+      if (error instanceof TypeError && error.message.includes('fetch')) {
+        throw new Error('No se puede conectar con el servidor. Verifica que esté funcionando.');
+      }
+      console.error(`Error en la petición API para ${endpoint}:`, error);
       throw error;
     }
   }
 
   async getProducts(category?: string, sortBy?: string): Promise<ApiProduct[]> {
     const params = new URLSearchParams();
-    if (category) params.append('category', category);
-    if (sortBy) params.append('sortBy', sortBy);
+    if (category && category.trim() !== '') {
+      params.append('category', category);
+    }
+    if (sortBy && sortBy.trim() !== '') {
+      params.append('sortBy', sortBy);
+    }
     
     const queryString = params.toString();
     const endpoint = `/products${queryString ? `?${queryString}` : ''}`;
@@ -85,8 +106,8 @@ class ApiService {
     return this.request<string[]>('/categories');
   }
 
-  async createOrder(orderData: CreateOrderRequest): Promise<{ message: string; order: Partial<ApiOrder> }> {
-    return this.request<{ message: string; order: Partial<ApiOrder> }>('/orders', {
+  async createOrder(orderData: CreateOrderRequest): Promise<CreateOrderResponse> {
+    return this.request<CreateOrderResponse>('/orders', {
       method: 'POST',
       body: JSON.stringify(orderData),
     });

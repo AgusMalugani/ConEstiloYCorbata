@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, Send, CheckCircle, AlertCircle } from 'lucide-react';
+import { X, Send, CheckCircle, AlertCircle, Loader2 } from 'lucide-react';
 import { CartItem } from '../types';
 import { apiService } from '../services/api';
 
@@ -8,10 +8,18 @@ interface CartProps {
   onClose: () => void;
   items: CartItem[];
   onRemoveItem: (id: number, size: string) => void;
+  onUpdateQuantity: (id: number, size: string, quantity: number) => void;
   onOrderComplete: () => void;
 }
 
-const Cart: React.FC<CartProps> = ({ isOpen, onClose, items, onRemoveItem, onOrderComplete }) => {
+const Cart: React.FC<CartProps> = ({ 
+  isOpen, 
+  onClose, 
+  items, 
+  onRemoveItem, 
+  onUpdateQuantity,
+  onOrderComplete 
+}) => {
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
   const [showPaymentInfo, setShowPaymentInfo] = useState(false);
@@ -19,11 +27,41 @@ const Cart: React.FC<CartProps> = ({ isOpen, onClose, items, onRemoveItem, onOrd
   const [orderSuccess, setOrderSuccess] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [paymentInfo, setPaymentInfo] = useState<any>(null);
+  const [orderId, setOrderId] = useState<number | null>(null);
 
   const total = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
 
+  const handleQuantityChange = (item: CartItem, newQuantity: number) => {
+    if (newQuantity < 1) {
+      onRemoveItem(item.id, item.selectedSize);
+    } else {
+      onUpdateQuantity(item.id, item.selectedSize, newQuantity);
+    }
+  };
+
+  const validateForm = () => {
+    if (!email.trim()) {
+      setError('El email es requerido');
+      return false;
+    }
+    if (!phone.trim()) {
+      setError('El teléfono es requerido');
+      return false;
+    }
+    if (!/\S+@\S+\.\S+/.test(email)) {
+      setError('El email no tiene un formato válido');
+      return false;
+    }
+    return true;
+  };
+
   const handleCheckout = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (!validateForm()) {
+      return;
+    }
+
     setIsSubmitting(true);
     setError(null);
 
@@ -37,18 +75,20 @@ const Cart: React.FC<CartProps> = ({ isOpen, onClose, items, onRemoveItem, onOrd
           quantity: item.quantity,
         })),
         customerInfo: {
-          email,
-          phone,
+          email: email.trim(),
+          phone: phone.trim(),
         },
         total,
       };
 
       const response = await apiService.createOrder(orderData);
       setPaymentInfo(response.order.paymentInfo);
+      setOrderId(response.order.id);
       setShowPaymentInfo(true);
       setOrderSuccess(true);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Error al procesar el pedido');
+      const errorMessage = err instanceof Error ? err.message : 'Error al procesar el pedido';
+      setError(errorMessage);
     } finally {
       setIsSubmitting(false);
     }
@@ -62,9 +102,14 @@ const Cart: React.FC<CartProps> = ({ isOpen, onClose, items, onRemoveItem, onOrd
       setShowPaymentInfo(false);
       setOrderSuccess(false);
       setPaymentInfo(null);
+      setOrderId(null);
     }
     setError(null);
     onClose();
+  };
+
+  const formatWhatsAppNumber = (number: string) => {
+    return number.replace(/\D/g, '');
   };
 
   if (!isOpen) return null;
@@ -81,7 +126,7 @@ const Cart: React.FC<CartProps> = ({ isOpen, onClose, items, onRemoveItem, onOrd
                 <h2 className="text-lg font-medium text-gray-900">Carrito de compras</h2>
                 <button
                   type="button"
-                  className="text-gray-400 hover:text-gray-500"
+                  className="text-gray-400 hover:text-gray-500 transition-colors"
                   onClick={handleClose}
                 >
                   <X className="h-6 w-6" />
@@ -91,7 +136,7 @@ const Cart: React.FC<CartProps> = ({ isOpen, onClose, items, onRemoveItem, onOrd
               {error && (
                 <div className="mt-4 p-4 bg-red-50 border border-red-200 rounded-md">
                   <div className="flex">
-                    <AlertCircle className="h-5 w-5 text-red-400" />
+                    <AlertCircle className="h-5 w-5 text-red-400 flex-shrink-0" />
                     <div className="ml-3">
                       <p className="text-sm text-red-800">{error}</p>
                     </div>
@@ -102,9 +147,11 @@ const Cart: React.FC<CartProps> = ({ isOpen, onClose, items, onRemoveItem, onOrd
               {orderSuccess && (
                 <div className="mt-4 p-4 bg-green-50 border border-green-200 rounded-md">
                   <div className="flex">
-                    <CheckCircle className="h-5 w-5 text-green-400" />
+                    <CheckCircle className="h-5 w-5 text-green-400 flex-shrink-0" />
                     <div className="ml-3">
-                      <p className="text-sm text-green-800">¡Pedido creado exitosamente!</p>
+                      <p className="text-sm text-green-800">
+                        ¡Pedido #{orderId} creado exitosamente!
+                      </p>
                     </div>
                   </div>
                 </div>
@@ -112,7 +159,9 @@ const Cart: React.FC<CartProps> = ({ isOpen, onClose, items, onRemoveItem, onOrd
 
               <div className="mt-8">
                 {items.length === 0 ? (
-                  <p className="text-gray-500">Tu carrito está vacío</p>
+                  <div className="text-center py-12">
+                    <p className="text-gray-500">Tu carrito está vacío</p>
+                  </div>
                 ) : (
                   <div className="flow-root">
                     <ul className="-my-6 divide-y divide-gray-200">
@@ -129,16 +178,35 @@ const Cart: React.FC<CartProps> = ({ isOpen, onClose, items, onRemoveItem, onOrd
                           <div className="ml-4 flex-1 flex flex-col">
                             <div>
                               <div className="flex justify-between text-base font-medium text-gray-900">
-                                <h3>{item.name}</h3>
+                                <h3 className="text-sm">{item.name}</h3>
                                 <p className="ml-4">${item.price * item.quantity}</p>
                               </div>
                               <p className="mt-1 text-sm text-gray-500">Talle {item.selectedSize}</p>
+                              <p className="text-sm text-gray-500">Precio unitario: ${item.price}</p>
                             </div>
                             <div className="flex-1 flex items-end justify-between text-sm">
-                              <p className="text-gray-500">Cantidad {item.quantity}</p>
+                              <div className="flex items-center space-x-2">
+                                <button
+                                  type="button"
+                                  className="text-gray-500 hover:text-gray-700 disabled:opacity-50"
+                                  onClick={() => handleQuantityChange(item, item.quantity - 1)}
+                                  disabled={orderSuccess}
+                                >
+                                  -
+                                </button>
+                                <span className="text-gray-900 font-medium">{item.quantity}</span>
+                                <button
+                                  type="button"
+                                  className="text-gray-500 hover:text-gray-700 disabled:opacity-50"
+                                  onClick={() => handleQuantityChange(item, item.quantity + 1)}
+                                  disabled={orderSuccess}
+                                >
+                                  +
+                                </button>
+                              </div>
                               <button
                                 type="button"
-                                className="font-medium text-pink-600 hover:text-pink-500"
+                                className="font-medium text-pink-600 hover:text-pink-500 disabled:opacity-50 transition-colors"
                                 onClick={() => onRemoveItem(item.id, item.selectedSize)}
                                 disabled={orderSuccess}
                               >
@@ -168,7 +236,7 @@ const Cart: React.FC<CartProps> = ({ isOpen, onClose, items, onRemoveItem, onOrd
                         htmlFor="email" 
                         className="absolute -top-2 left-2 bg-white px-1 text-xs font-medium text-pink-600"
                       >
-                        Email
+                        Email *
                       </label>
                       <input
                         type="email"
@@ -186,7 +254,7 @@ const Cart: React.FC<CartProps> = ({ isOpen, onClose, items, onRemoveItem, onOrd
                         htmlFor="phone" 
                         className="absolute -top-2 left-2 bg-white px-1 text-xs font-medium text-pink-600"
                       >
-                        Teléfono
+                        Teléfono *
                       </label>
                       <input
                         type="tel"
@@ -204,27 +272,48 @@ const Cart: React.FC<CartProps> = ({ isOpen, onClose, items, onRemoveItem, onOrd
                       disabled={isSubmitting}
                       className="w-full flex justify-center items-center px-6 py-3 border border-transparent rounded-lg text-base font-medium text-white bg-pink-600 hover:bg-pink-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors shadow-sm"
                     >
-                      {isSubmitting ? 'Procesando...' : 'Continuar con el pago'}
+                      {isSubmitting ? (
+                        <>
+                          <Loader2 className="animate-spin h-5 w-5 mr-2" />
+                          Procesando...
+                        </>
+                      ) : (
+                        'Continuar con el pago'
+                      )}
                     </button>
                   </form>
                 ) : (
                   <div className="mt-6 space-y-4">
                     <div className="bg-gray-50 p-4 rounded-lg">
-                      <h3 className="text-lg font-medium text-gray-900 mb-2">Información de pago</h3>
-                      <p className="text-sm text-gray-600 mb-2">CBU: {paymentInfo?.cbu || '0000000000000000000000'}</p>
-                      <p className="text-sm text-gray-600 mb-4">Alias: {paymentInfo?.alias || 'agusmalugani.mp'}</p>
-                      <p className="text-sm text-gray-600">
-                        Una vez realizada la transferencia, envía el comprobante por WhatsApp al:
-                      </p>
-                      <a
-                        href={`https://wa.me/${paymentInfo?.whatsapp?.replace('+', '') || '3413857748'}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="mt-2 inline-flex items-center text-pink-600 hover:text-pink-500"
-                      >
-                        <Send className="h-5 w-5 mr-2" />
-                        {paymentInfo?.whatsapp || '+54 3413857748'}
-                      </a>
+                      <h3 className="text-lg font-medium text-gray-900 mb-3">Información de pago</h3>
+                      <div className="space-y-2 text-sm">
+                        <div>
+                          <span className="font-medium text-gray-700">CBU:</span>
+                          <p className="text-gray-900 font-mono">{paymentInfo?.cbu}</p>
+                        </div>
+                        <div>
+                          <span className="font-medium text-gray-700">Alias:</span>
+                          <p className="text-gray-900">{paymentInfo?.alias}</p>
+                        </div>
+                        <div>
+                          <span className="font-medium text-gray-700">Monto a transferir:</span>
+                          <p className="text-lg font-bold text-pink-600">${total}</p>
+                        </div>
+                      </div>
+                      <div className="mt-4 pt-4 border-t border-gray-200">
+                        <p className="text-sm text-gray-600 mb-3">
+                          Una vez realizada la transferencia, envía el comprobante por WhatsApp:
+                        </p>
+                        <a
+                          href={`https://wa.me/${formatWhatsAppNumber(paymentInfo?.whatsapp || '3413857748')}?text=Hola! Acabo de realizar el pago del pedido #${orderId} por $${total}. Te envío el comprobante.`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+                        >
+                          <Send className="h-5 w-5 mr-2" />
+                          Enviar comprobante
+                        </a>
+                      </div>
                     </div>
                   </div>
                 )}

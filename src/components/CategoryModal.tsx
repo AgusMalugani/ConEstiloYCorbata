@@ -1,5 +1,5 @@
 import React from 'react';
-import { X } from 'lucide-react';
+import { X, Loader2 } from 'lucide-react';
 import { Product } from '../types';
 
 interface CategoryModalProps {
@@ -7,9 +7,16 @@ interface CategoryModalProps {
   onClose: () => void;
   category: string;
   products: Product[];
+  loading?: boolean;
 }
 
-const CategoryModal: React.FC<CategoryModalProps> = ({ isOpen, onClose, category, products }) => {
+const CategoryModal: React.FC<CategoryModalProps> = ({ 
+  isOpen, 
+  onClose, 
+  category, 
+  products, 
+  loading = false 
+}) => {
   if (!isOpen) return null;
 
   return (
@@ -24,7 +31,7 @@ const CategoryModal: React.FC<CategoryModalProps> = ({ isOpen, onClose, category
           <div className="absolute top-0 right-0 pt-4 pr-4">
             <button
               type="button"
-              className="text-gray-400 hover:text-gray-500 focus:outline-none"
+              className="text-gray-400 hover:text-gray-500 focus:outline-none transition-colors"
               onClick={onClose}
             >
               <X className="w-6 h-6" />
@@ -35,21 +42,45 @@ const CategoryModal: React.FC<CategoryModalProps> = ({ isOpen, onClose, category
             {category}
           </h3>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {products.map((product) => (
-              <div key={product.id} className="relative aspect-square overflow-hidden rounded-lg">
-                <img
-                  src={product.imageUrl}
-                  alt={product.name}
-                  className="w-full h-full object-contain bg-gray-100"
-                />
-                <div className="absolute bottom-0 left-0 right-0 bg-black bg-opacity-50 text-white p-2">
-                  <p className="text-sm font-medium">{product.name}</p>
-                  <p className="text-sm">${product.price}</p>
+          {loading ? (
+            <div className="flex justify-center items-center py-12">
+              <Loader2 className="h-8 w-8 animate-spin text-pink-600" />
+              <span className="ml-2 text-gray-600">Cargando productos...</span>
+            </div>
+          ) : products.length === 0 ? (
+            <div className="text-center py-12">
+              <p className="text-gray-500">No hay productos disponibles en esta categoría.</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {products.map((product) => (
+                <div key={product.id} className="relative aspect-square overflow-hidden rounded-lg group">
+                  <img
+                    src={product.imageUrl}
+                    alt={product.name}
+                    className="w-full h-full object-cover transition-transform group-hover:scale-105"
+                  />
+                  <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent text-white p-3">
+                    <p className="text-sm font-medium">{product.name}</p>
+                    <div className="flex justify-between items-center mt-1">
+                      <p className="text-sm font-bold">${product.price}</p>
+                      {product.stock !== undefined && (
+                        <p className={`text-xs ${
+                          product.stock <= 0 
+                            ? 'text-red-300' 
+                            : product.stock <= 5 
+                            ? 'text-orange-300' 
+                            : 'text-green-300'
+                        }`}>
+                          {product.stock <= 0 ? 'Sin stock' : `Stock: ${product.stock}`}
+                        </p>
+                      )}
+                    </div>
+                  </div>
                 </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          )}
         </div>
       </div>
     </div>
