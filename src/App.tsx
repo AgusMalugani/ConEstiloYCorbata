@@ -1,11 +1,10 @@
-import  { useState } from 'react';
+import { useState } from 'react';
 import { Product, CartItem } from './types';
 import Navbar from './components/Navbar';
 import HeroCarousel from './components/HeroCarousel';
 import CategoryCarousel from './components/CategoryCarousel';
 import ProductGrid from './components/ProductGrid';
 import Cart from './components/Cart';
-import { products } from './data/products';
 
 function App() {
   const [isCartOpen, setIsCartOpen] = useState(false);
@@ -37,6 +36,10 @@ function App() {
     );
   };
 
+  const handleOrderComplete = () => {
+    setCart([]);
+  };
+
   const cartItemsCount = cart.reduce((sum, item) => sum + item.quantity, 0);
 
   return (
@@ -45,16 +48,17 @@ function App() {
       <main className="pt-16">
         <HeroCarousel />
         <CategoryCarousel />
-        <ProductGrid products={products} onAddToCart={addToCart} />
+        <ProductGrid onAddToCart={addToCart} />
         <Cart
           isOpen={isCartOpen}
           onClose={() => setIsCartOpen(false)}
           items={cart}
           onRemoveItem={removeFromCart}
+          onOrderComplete={handleOrderComplete}
         />
       </main>
     </div>
   );
 }
 
-export default App
+export default App;
