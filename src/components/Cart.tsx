@@ -1,14 +1,14 @@
 import React, { useState } from 'react';
 import { X, Send, CheckCircle, AlertCircle, Loader2 } from 'lucide-react';
 import { CartItem } from '../types';
-import { apiService } from '../services/api';
+import { createOrder } from '../services/order/createOrder.service';
 
 interface CartProps {
   isOpen: boolean;
   onClose: () => void;
   items: CartItem[];
-  onRemoveItem: (id: number, size: string) => void;
-  onUpdateQuantity: (id: number, size: string, quantity: number) => void;
+  onRemoveItem: (id: string, size: number) => void;
+  onUpdateQuantity: (id: string, size: number, quantity: number) => void;
   onOrderComplete: () => void;
 }
 
@@ -29,7 +29,7 @@ const Cart: React.FC<CartProps> = ({
   const [paymentInfo, setPaymentInfo] = useState<any>(null);
   const [orderId, setOrderId] = useState<number | null>(null);
 
-  const total = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
+  const total = items.reduce((sum, item) => sum + item.precio * item.quantity, 0);
 
   const handleQuantityChange = (item: CartItem, newQuantity: number) => {
     if (newQuantity < 1) {
@@ -66,24 +66,28 @@ const Cart: React.FC<CartProps> = ({
     setError(null);
 
     try {
+      // Adaptar los datos a la estructura esperada por el backend
       const orderData = {
-        items: items.map(item => ({
-          id: item.id,
-          name: item.name,
-          price: item.price,
-          selectedSize: item.selectedSize,
-          quantity: item.quantity,
-        })),
-        customerInfo: {
-          email: email.trim(),
-          phone: phone.trim(),
-        },
-        total,
+        seña: 0, // o el valor que corresponda
+        resto: total,
+        celular: phone.trim(),
+        entregado: false,
+        isActive: true,
+        productos: items.map(item => (item.id
+          
+          //nombre: item.nombre,
+          //precio: item.precio,
+         // talle: item.selectedSize,
+         // categoria: item.categoria,
+         // color: item.color,
+          //imageUrl: item.imageUrl,
+          //stock: item.stock,
+      //  }
+      )),
       };
 
-      const response = await apiService.createOrder(orderData);
-      setPaymentInfo(response.order.paymentInfo);
-      setOrderId(response.order.id);
+      const response = await createOrder(orderData);
+      setOrderId(response.id);
       setShowPaymentInfo(true);
       setOrderSuccess(true);
     } catch (err) {
@@ -170,7 +174,7 @@ const Cart: React.FC<CartProps> = ({
                           <div className="flex-shrink-0 w-24 h-24 overflow-hidden rounded-md">
                             <img
                               src={item.imageUrl}
-                              alt={item.name}
+                              alt={item.nombre}
                               className="w-full h-full object-cover"
                             />
                           </div>
@@ -178,11 +182,11 @@ const Cart: React.FC<CartProps> = ({
                           <div className="ml-4 flex-1 flex flex-col">
                             <div>
                               <div className="flex justify-between text-base font-medium text-gray-900">
-                                <h3 className="text-sm">{item.name}</h3>
-                                <p className="ml-4">${item.price * item.quantity}</p>
+                                <h3 className="text-sm">{item.nombre}</h3>
+                                <p className="ml-4">${item.precio * item.quantity}</p>
                               </div>
                               <p className="mt-1 text-sm text-gray-500">Talle {item.selectedSize}</p>
-                              <p className="text-sm text-gray-500">Precio unitario: ${item.price}</p>
+                              <p className="text-sm text-gray-500">Precio unitario: ${item.precio}</p>
                             </div>
                             <div className="flex-1 flex items-end justify-between text-sm">
                               <div className="flex items-center space-x-2">

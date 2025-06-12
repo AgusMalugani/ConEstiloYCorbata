@@ -1,20 +1,28 @@
 import { useState, useEffect } from 'react';
-import { apiService, ApiProduct } from '../services/api';
+//import { apiService, ApiProduct } from '../services/api';
 import { Product } from '../types';
+import { findAllProducts } from '../services/product/findAllProducts.service';
 
 // Convertir producto de la API al formato del frontend
-const convertApiProduct = (apiProduct: ApiProduct): Product => ({
-  id: apiProduct.id,
-  name: apiProduct.name,
-  price: apiProduct.price,
-  description: apiProduct.description,
-  sizes: apiProduct.sizes,
-  category: apiProduct.category,
-  imageUrl: apiProduct.imageUrl,
-  stock: apiProduct.stock,
-});
+//const convertApiProduct = (apiProduct: ApiProduct): Product => ({
+//  id: apiProduct.id,
+//  name: apiProduct.name,
+//  price: apiProduct.price,
+//  description: apiProduct.description,
+ // sizes: apiProduct.sizes,
+ // category: apiProduct.category,
+ // imageUrl: apiProduct.imageUrl,
+ // stock: apiProduct.stock,
+//});
 
-export const useProducts = (category?: string, sortBy?: string) => {
+// Categorías fijas
+export const CATEGORIES = [
+  'Buzo',
+  'Polar soft',
+  'Camiseta',
+];
+
+export const useProducts = (category?: string, sortBy?: string, color?: string, talle?: number, onlyUniqueImages?: boolean) => {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -23,9 +31,26 @@ export const useProducts = (category?: string, sortBy?: string) => {
     try {
       setLoading(true);
       setError(null);
-      const apiProducts = await apiService.getProducts(category, sortBy);
-      const convertedProducts = apiProducts.map(convertApiProduct);
-      setProducts(convertedProducts);
+      const apiProducts: Product[] = await findAllProducts();
+      // Filtrado en frontend
+      let filtered: Product[] = apiProducts;
+      if (category) filtered = filtered.filter((p: Product) => p.categoria === category);
+      if (color) filtered = filtered.filter((p: Product) => p.color === color);
+      if (talle) filtered = filtered.filter((p: Product) => p.talle === talle);
+      // Filtrar productos con imagen única SOLO si onlyUniqueImages es true
+      if (onlyUniqueImages) {
+        const uniqueImages = new Set<string>();
+        filtered = filtered.filter((p: Product) => {
+          if (!p.imageUrl) return false;
+          if (uniqueImages.has(p.imageUrl)) return false;
+          uniqueImages.add(p.imageUrl);
+          return true;
+        });
+      }
+      // Ordenamiento
+      if (sortBy === 'precio-asc') filtered = filtered.sort((a: Product, b: Product) => a.precio - b.precio);
+      if (sortBy === 'precio-desc') filtered = filtered.sort((a: Product, b: Product) => b.precio - a.precio);
+      setProducts(filtered);
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Error al cargar los productos';
       setError(errorMessage);
@@ -37,36 +62,15 @@ export const useProducts = (category?: string, sortBy?: string) => {
 
   useEffect(() => {
     fetchProducts();
-  }, [category, sortBy]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [category, sortBy, color, talle, onlyUniqueImages]);
 
   return { products, loading, error, refetch: fetchProducts };
 };
 
 export const useCategories = () => {
-  const [categories, setCategories] = useState<string[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  const fetchCategories = async () => {
-    try {
-      setLoading(true);
-      setError(null);
-      const apiCategories = await apiService.getCategories();
-      setCategories(apiCategories);
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Error al cargar las categorías';
-      setError(errorMessage);
-      console.error('Error al obtener categorías:', err);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchCategories();
-  }, []);
-
-  return { categories, loading, error, refetch: fetchCategories };
+  // Devuelve las categorías fijas
+  return { categories: CATEGORIES, loading: false, error: null, refetch: () => {} };
 };
 
 export const useOrder = (orderId?: number) => {
@@ -78,11 +82,12 @@ export const useOrder = (orderId?: number) => {
     try {
       setLoading(true);
       setError(null);
-      const orderData = await apiService.getOrder(id);
+  //TODO : MODIFICAR LA LLAMADA
+      const orderData = await apiService.getOrder(id); //TRAIGO UNA ORDEN X ID
       setOrder(orderData);
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Error al cargar el pedido';
-      setError(errorMessage);
+      setError(errorMessage); //GUARDO EL ERROR
       console.error('Error al obtener pedido:', err);
     } finally {
       setLoading(false);
@@ -91,7 +96,7 @@ export const useOrder = (orderId?: number) => {
 
   useEffect(() => {
     if (orderId) {
-      fetchOrder(orderId);
+      fetchOrder(orderId); //LLAMO LA FUNCION
     }
   }, [orderId]);
 

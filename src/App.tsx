@@ -28,7 +28,7 @@ function App() {
     });
   };
 
-  const removeFromCart = (productId: number, size: string) => {
+  const removeFromCart = (productId: string, size: string) => {
     setCart(currentCart =>
       currentCart.filter(
         item => !(item.id === productId && item.selectedSize === size)
@@ -36,7 +36,7 @@ function App() {
     );
   };
 
-  const updateQuantity = (productId: number, size: string, quantity: number) => {
+  const updateQuantity = (productId: string, size: string, quantity: number) => {
     if (quantity <= 0) {
       removeFromCart(productId, size);
       return;

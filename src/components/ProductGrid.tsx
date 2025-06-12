@@ -12,23 +12,24 @@ interface ProductGridProps {
 const ProductGrid: React.FC<ProductGridProps> = ({ onAddToCart }) => {
   const [filteredCategory, setFilteredCategory] = useState<string>('');
   const [sortOrder, setSortOrder] = useState<string>('featured');
-
+  const { categories } = useCategories();
   const { products, loading: productsLoading, error: productsError, refetch: refetchProducts } = useProducts(filteredCategory, sortOrder);
-  const { categories, loading: categoriesLoading, error: categoriesError, refetch: refetchCategories } = useCategories();
+  //const { categories, loading: categoriesLoading, error: categoriesError, refetch: refetchCategories } = useCategories();
+//console.log(products);
 
   const handleRetry = () => {
     refetchProducts();
-    refetchCategories();
+  //  refetchCategories();
   };
 
-  if (productsError || categoriesError) {
+  if (productsError ) { //|| categoriesError
     return (
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12" id="productos">
         <div className="text-center">
           <AlertCircle className="mx-auto h-12 w-12 text-red-500 mb-4" />
           <h3 className="text-lg font-medium text-gray-900 mb-2">Error al cargar los datos</h3>
           <p className="text-red-600 mb-4">
-            {productsError || categoriesError}
+            {productsError } 
           </p>
           <div className="space-y-2">
             <p className="text-gray-600 text-sm">
@@ -70,20 +71,19 @@ const ProductGrid: React.FC<ProductGridProps> = ({ onAddToCart }) => {
             disabled={productsLoading}
           >
             <option value="featured">Destacados</option>
-            <option value="price-asc">Menor precio</option>
-            <option value="price-desc">Mayor precio</option>
+            <option value="precio-asc">Menor precio</option>
+            <option value="precio-desc">Mayor precio</option>
             <option value="name">Nombre</option>
           </select>
         </div>
       </div>
-      
       <div className="flex flex-col lg:flex-row gap-8">
         <div className="w-full lg:w-64 shrink-0">
           <ProductFilters
             categories={categories}
             filteredCategory={filteredCategory}
             setFilteredCategory={setFilteredCategory}
-            loading={categoriesLoading}
+            loading={false}
           />
         </div>
         <div className="flex-1">

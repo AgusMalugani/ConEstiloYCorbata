@@ -17,27 +17,21 @@ interface Category {
 const categories: Category[] = [
   {
     id: 1,
-    name: 'Polar Soft',
+    name: 'Polar soft',
     image: 'https://images.pexels.com/photos/6568944/pexels-photo-6568944.jpeg',
     link: '/categoria/polar-soft'
   },
   {
     id: 2,
-    name: 'Chalecos Puffer',
+    name: 'Buzo',
     image: 'https://images.pexels.com/photos/6568951/pexels-photo-6568951.jpeg',
     link: '/categoria/chalequitos-puffer'
   },
   {
     id: 3,
-    name: 'Camisetas',
+    name: 'Camiseta',
     image: 'https://images.pexels.com/photos/4587998/pexels-photo-4587998.jpeg',
     link: '/categoria/camisetas'
-  },
-  {
-    id: 4,
-    name: 'Accesorios',
-    image: 'https://images.pexels.com/photos/6568961/pexels-photo-6568961.jpeg',
-    link: '/categoria/accesorios'
   }
 ];
 
@@ -45,7 +39,8 @@ const CategoryCarousel: React.FC = () => {
   const [selectedCategory, setSelectedCategory] = useState<string>('');
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  const { products: filteredProducts, loading } = useProducts(selectedCategory);
+  // Usar el filtro de imágenes únicas solo en el carrusel
+  const { products: filteredProducts, loading } = useProducts(selectedCategory, undefined, undefined, undefined, true);
 
   const handleCategoryClick = (categoryName: string) => {
     setSelectedCategory(categoryName);

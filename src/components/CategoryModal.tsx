@@ -57,13 +57,13 @@ const CategoryModal: React.FC<CategoryModalProps> = ({
                 <div key={product.id} className="relative aspect-square overflow-hidden rounded-lg group">
                   <img
                     src={product.imageUrl}
-                    alt={product.name}
+                    alt={product.nombre}
                     className="w-full h-full object-cover transition-transform group-hover:scale-105"
                   />
                   <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent text-white p-3">
-                    <p className="text-sm font-medium">{product.name}</p>
+                    <p className="text-sm font-medium">{product.nombre}</p>
                     <div className="flex justify-between items-center mt-1">
-                      <p className="text-sm font-bold">${product.price}</p>
+                      <p className="text-sm font-bold">${product.precio}</p>
                       {product.stock !== undefined && (
                         <p className={`text-xs ${
                           product.stock <= 0 
