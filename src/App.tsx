@@ -1,10 +1,51 @@
 import { useState } from 'react';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { Product, CartItem } from './types';
 import Navbar from './components/Navbar';
 import HeroCarousel from './components/HeroCarousel';
 import CategoryCarousel from './components/CategoryCarousel';
 import ProductGrid from './components/ProductGrid';
 import Cart from './components/Cart';
+import AdminRoute from './components/AdminRoute';
+
+function MainPage({ 
+  isCartOpen, 
+  setIsCartOpen, 
+  cart, 
+  addToCart, 
+  removeFromCart, 
+  updateQuantity, 
+  handleOrderComplete, 
+  cartItemsCount 
+}: {
+  isCartOpen: boolean;
+  setIsCartOpen: (open: boolean) => void;
+  cart: CartItem[];
+  addToCart: (product: Product, size: string) => void;
+  removeFromCart: (productId: string, size: string) => void;
+  updateQuantity: (productId: string, size: string, quantity: number) => void;
+  handleOrderComplete: () => void;
+  cartItemsCount: number;
+}) {
+  return (
+    <div className="min-h-screen bg-gray-50">
+      <Navbar cartItemsCount={cartItemsCount} onCartClick={() => setIsCartOpen(true)} />
+      <main className="pt-16">
+        <HeroCarousel />
+        <CategoryCarousel />
+        <ProductGrid onAddToCart={addToCart} />
+        <Cart
+          isOpen={isCartOpen}
+          onClose={() => setIsCartOpen(false)}
+          items={cart}
+          onRemoveItem={removeFromCart}
+          onUpdateQuantity={updateQuantity}
+          onOrderComplete={handleOrderComplete}
+        />
+      </main>
+    </div>
+  );
+}
 
 function App() {
   const [isCartOpen, setIsCartOpen] = useState(false);
@@ -59,22 +100,26 @@ function App() {
   const cartItemsCount = cart.reduce((sum, item) => sum + item.quantity, 0);
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <Navbar cartItemsCount={cartItemsCount} onCartClick={() => setIsCartOpen(true)} />
-      <main className="pt-16">
-        <HeroCarousel />
-        <CategoryCarousel />
-        <ProductGrid onAddToCart={addToCart} />
-        <Cart
-          isOpen={isCartOpen}
-          onClose={() => setIsCartOpen(false)}
-          items={cart}
-          onRemoveItem={removeFromCart}
-          onUpdateQuantity={updateQuantity}
-          onOrderComplete={handleOrderComplete}
+    <Router>
+      <Routes>
+        <Route 
+          path="/" 
+          element={
+            <MainPage
+              isCartOpen={isCartOpen}
+              setIsCartOpen={setIsCartOpen}
+              cart={cart}
+              addToCart={addToCart}
+              removeFromCart={removeFromCart}
+              updateQuantity={updateQuantity}
+              handleOrderComplete={handleOrderComplete}
+              cartItemsCount={cartItemsCount}
+            />
+          } 
         />
-      </main>
-    </div>
+        <Route path="/admin" element={<AdminRoute />} />
+      </Routes>
+    </Router>
   );
 }
 
